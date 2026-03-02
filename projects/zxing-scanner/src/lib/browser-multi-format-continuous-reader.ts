@@ -16,23 +16,32 @@ export class BrowserMultiFormatContinuousReader extends BrowserMultiFormatReader
    */
   protected scannerControls: IScannerControls;
 
-  /** HOTFIX for qr code prints with low contrast
+  /**
+   * HOTFIX for qr code prints with low contrast
    */
 
-  static createBinaryBitmapFromCanvas(canvas) {
+  private static toggleLuminanceInvert = false
+
+  static createBinaryBitmapFromCanvas(canvas: HTMLCanvasElement) {
+    // Invert luminance on every other frame, to ensure both black-on-white and white-on-black codes work eventually
+    this.toggleLuminanceInvert = !this.toggleLuminanceInvert;
+    const luminanceInvert = this.toggleLuminanceInvert;
+
     const luminanceSource = new HTMLCanvasElementLuminanceSource(canvas);
-    const invertedSource = luminanceSource.invert();
+    const invertedSource = luminanceInvert ? luminanceSource.invert() : luminanceSource;
     const hybridBinarizer = new HybridBinarizer(invertedSource);
-    console.log("using patched ngx-scanner");
+    //console.log("using patched ngx-scanner");
     return new BinaryBitmap(hybridBinarizer);
   }
 
-  decodeFromCanvas(canvas: HTMLCanvasElement): Result {
-    const binaryBitmap = BrowserMultiFormatReader.createBinaryBitmapFromCanvas(canvas);
+  override decodeFromCanvas(canvas: HTMLCanvasElement): Result {
+    // Use override version of createBinaryBitmapFromCanvas
+    const binaryBitmap = BrowserMultiFormatContinuousReader.createBinaryBitmapFromCanvas(canvas);
     return this.decodeBitmap(binaryBitmap);
   }
 
-  /** HOTFIX END
+  /**
+   * HOTFIX END
    */
 
   /**
