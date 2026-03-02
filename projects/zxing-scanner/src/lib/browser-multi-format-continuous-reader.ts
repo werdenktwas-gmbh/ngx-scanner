@@ -1,4 +1,6 @@
 import { ChecksumException, FormatException, NotFoundException } from '@zxing/library';
+import { HTMLCanvasElementLuminanceSource } from '@zxing/browser/esm/common/HTMLCanvasElementLuminanceSource';
+import { BinaryBitmap, HybridBinarizer, Result } from '@zxing/library';
 import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ResultAndError } from './ResultAndError';
@@ -13,6 +15,24 @@ export class BrowserMultiFormatContinuousReader extends BrowserMultiFormatReader
    * Will be undefined if no scanning is running.
    */
   protected scannerControls: IScannerControls;
+
+  /** HOTFIX for qr code prints with low contrast
+   */
+
+  static createBinaryBitmapFromCanvas(canvas) {
+    const luminanceSource = new HTMLCanvasElementLuminanceSource(canvas);
+    const invertedSource = luminanceSource.invert();
+    const hybridBinarizer = new HybridBinarizer(invertedSource);
+    return new BinaryBitmap(hybridBinarizer);
+  }
+
+  decodeFromCanvas(canvas: HTMLCanvasElement): Result {
+    const binaryBitmap = BrowserMultiFormatReader.createBinaryBitmapFromCanvas(canvas);
+    return this.decodeBitmap(binaryBitmap);
+  }
+
+  /** HOTFIX END
+   */
 
   /**
    * Returns the code reader scanner controls.
