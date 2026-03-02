@@ -23,6 +23,7 @@ export class BrowserMultiFormatContinuousReader extends BrowserMultiFormatReader
     const luminanceSource = new HTMLCanvasElementLuminanceSource(canvas);
     const invertedSource = luminanceSource.invert();
     const hybridBinarizer = new HybridBinarizer(invertedSource);
+    console.log("using patched ngx-scanner");
     return new BinaryBitmap(hybridBinarizer);
   }
 
